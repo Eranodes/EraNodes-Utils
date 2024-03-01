@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { config } = require('dotenv');
 const fs = require('fs');
+const { log } = require('./utilities/logger'); // Importing the logger module
 
 // Load environment variables from .env file
 config();
@@ -27,7 +28,7 @@ for (const file of commandFiles) {
 }
 
 bot.once('ready', () => {
-  console.log(`Logged in as ${bot.user.tag}!`);
+  log(`Logged in as ${bot.user.tag}!`); // Using the logger to log the bot's readiness
 });
 
 bot.on('interactionCreate', async interaction => {
@@ -41,7 +42,7 @@ bot.on('interactionCreate', async interaction => {
   try {
     await bot.commands.get(commandName).execute(interaction);
   } catch (error) {
-    console.error(error);
+    log(`Error executing command "${commandName}": ${error.message}`, 'error'); // Logging command execution errors
     await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
   }
 });
