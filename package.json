@@ -1,0 +1,14 @@
+{
+  "name": "eranodes-utils",
+  "version": "1.0.0",
+  "description": "A cool bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "eranodes"
+  ],
+  "author": "G9 Aerospace",
+  "license": "MIT"
+}
