@@ -29,6 +29,11 @@ for (const file of commandFiles) {
 
 bot.once('ready', () => {
   log(`Logged in as ${bot.user.tag}!`); // Using the logger to log the bot's readiness
+
+  // Register slash commands
+  bot.commands.forEach(command => {
+    bot.application.commands.create(command.data);
+  });
 });
 
 bot.on('interactionCreate', async interaction => {
