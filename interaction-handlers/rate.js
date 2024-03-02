@@ -1,37 +1,36 @@
 // interaction-handlers/rate.js
-const fs = require('fs');
-const { Client } = require('discord.js');
+const { ButtonBuilder } = require('discord.js');
 
 module.exports = {
-  handle: async (interaction, client) => {
-    // Check if the interaction is from the correct custom ID
-    if (interaction.customId === 'rating_dropdown') {
-      const selectedRating = interaction.values[0];
+  async handleDropdown(interaction) {
+    const selectedRating = interaction.values[0];
 
-      // Retrieve the rated user's ID from the original interaction
-      const ratedUserID = interaction.options.getUser('user').id;
-
-      // Get the current date and time
-      const currentDate = new Date();
-      const formattedDate = currentDate.toISOString();
-
-      // Details of the rating (replace with your desired content)
-      const ratingDetails = {
-        rating: selectedRating,
-        date: formattedDate,
-        // Add other details as needed
-      };
-
-      // Save the rating to a JSON file
-      const filePath = `data/ratings/${ratedUserID}.json`;
-
-      try {
-        fs.writeFileSync(filePath, JSON.stringify(ratingDetails, null, 2));
-        await interaction.editReply(`Rating saved successfully for user <@${ratedUserID}>!`);
-      } catch (error) {
-        console.error(`Error saving rating for user ${ratedUserID}: ${error.message}`);
-        await interaction.editReply('There was an error saving the rating. Please try again.');
-      }
+    // Check if the selectedRating is a valid value (optional)
+    const isValidRating = ['1', '2', '3', '4', '5'].includes(selectedRating);
+    if (!isValidRating) {
+      return interaction.reply({ content: 'Invalid rating selected.', ephemeral: true });
     }
+
+    // Create buttons
+    const writeReviewButton = new ButtonBuilder()
+      .setCustomId('write_review')
+      .setLabel('Write a Review')
+      .setStyle(1); // 1 represents ButtonStyle.PRIMARY
+
+    const submitRatingButton = new ButtonBuilder()
+      .setCustomId('submit_rating')
+      .setLabel('Submit Rating')
+      .setStyle(1); // 1 represents ButtonStyle.PRIMARY
+
+    // Send buttons to the user
+    await interaction.reply({
+      content: `You've selected ${selectedRating} stars. Do you want to write a review or just submit the rating?`,
+      components: [
+        {
+          type: 1, // Action Row Type
+          components: [writeReviewButton, submitRatingButton],
+        },
+      ],
+    });
   },
 };

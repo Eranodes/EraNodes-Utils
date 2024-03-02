@@ -1,6 +1,7 @@
 // commands/rate.js
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
+const RateInteractionHandler = require('../interaction-handlers/rate'); // Import the new interaction handler
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -56,3 +57,6 @@ module.exports = {
     }
   },
 };
+
+// Interaction Handling
+module.exports.interactionHandler = RateInteractionHandler.handleDropdown;

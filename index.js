@@ -37,18 +37,42 @@ bot.once('ready', () => {
 });
 
 bot.on('interactionCreate', async interaction => {
-  if (!interaction.isCommand()) return;
+  if (!interaction.isCommand() && !interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-  const { commandName } = interaction;
+  if (interaction.isCommand()) {
+    const { commandName } = interaction;
 
-  // Execute the command
-  if (!bot.commands.has(commandName)) return;
+    // Execute the command
+    if (!bot.commands.has(commandName)) return;
 
-  try {
-    await bot.commands.get(commandName).execute(interaction);
-  } catch (error) {
-    log(`Error executing command "${commandName}": ${error.message}`, 'error'); // Logging command execution errors
-    await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    try {
+      await bot.commands.get(commandName).execute(interaction);
+    } catch (error) {
+      log(`Error executing command "${commandName}": ${error.message}`, 'error');
+      await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    }
+  } else if (interaction.isButton()) {
+    // Handle button interactions
+    const customId = interaction.customId;
+
+    if (customId === 'write_review' || customId === 'submit_rating') {
+      // Route button interactions to the appropriate handler
+      const handler = bot.commands.get('rate').interactionHandler;
+      if (handler) {
+        handler(interaction);
+      }
+    }
+  } else if (interaction.isStringSelectMenu()) {
+    // Handle select menu (dropdown) interactions
+    const customId = interaction.customId;
+
+    if (customId === 'rating_dropdown') {
+      // Route dropdown interactions to the appropriate handler
+      const handler = bot.commands.get('rate').interactionHandler;
+      if (handler) {
+        handler(interaction);
+      }
+    }
   }
 });
 
