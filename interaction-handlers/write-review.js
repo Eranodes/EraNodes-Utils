@@ -1,5 +1,7 @@
 // interaction-handlers/write-review.js
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+const fs = require('fs/promises');
+const path = require('path');
 
 module.exports = {
   async handleWriteReview(interaction) {
