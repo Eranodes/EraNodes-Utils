@@ -1,3 +1,5 @@
+// index.js
+
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { config } = require('dotenv');
 const fs = require('fs');
@@ -55,9 +57,15 @@ bot.on('interactionCreate', async interaction => {
     // Handle button interactions
     const customId = interaction.customId;
 
-    if (customId === 'write_review' || customId === 'submit_rating') {
-      // Route button interactions to the appropriate handler
-      const handler = bot.commands.get('rate').interactionHandler;
+    if (customId === 'write_review') {
+      // Route "Write a Review" button interactions to the appropriate handler
+      const handler = require('./interaction-handlers/write-review').handleWriteReview;
+      if (handler) {
+        handler(interaction);
+      }
+    } else if (customId === 'submit_rating') {
+      // Route "Submit Rating" button interactions to the appropriate handler
+      const handler = require('./interaction-handlers/submit-rating').handleSubmitRating;
       if (handler) {
         handler(interaction);
       }
