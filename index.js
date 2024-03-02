@@ -39,7 +39,7 @@ bot.once('ready', () => {
 });
 
 bot.on('interactionCreate', async interaction => {
-  if (!interaction.isCommand() && !interaction.isButton() && !interaction.isStringSelectMenu()) return;
+  if (!interaction.isCommand() && !interaction.isButton() && !interaction.isStringSelectMenu() && !interaction.isModalSubmit()) return;
 
   if (interaction.isCommand()) {
     const { commandName } = interaction;
@@ -80,6 +80,16 @@ bot.on('interactionCreate', async interaction => {
       if (handler) {
         handler(interaction);
       }
+    }
+  } else if (interaction.isModalSubmit()) {
+    // Handle modal submissions
+    if (interaction.customId === 'writeReviewModal') {
+      // Get the data entered by the user
+      const issues = interaction.fields.getTextInputValue('issuesInput');
+
+      // Implement your logic with the received data (e.g., logging or responding)
+      console.log('User reported issues:', issues);
+      await interaction.reply({ content: 'Thank you for your feedback!', ephemeral: true });
     }
   }
 });
