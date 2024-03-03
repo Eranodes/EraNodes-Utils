@@ -1,4 +1,4 @@
-const { Interaction } = require('discord.js');
+const { Interaction, ChannelType } = require('discord.js');
 
 /**
  * Handle the interaction when a user selects a department from the dropdown.
@@ -24,33 +24,36 @@ async function handleTicketCreate(interaction) {
       department = 'Unknown';
   }
 
-  // Create a thread in the channel
+  // Create a private thread in the channel
   const channelName = `${department.toLowerCase()}-${member.user.username}`;
   const thread = await interaction.channel.threads.create({
     name: channelName,
     autoArchiveDuration: 60, // Adjust the auto-archive duration as needed
+    type: ChannelType.PrivateThread, // Set the type to PrivateThread
   });
 
   // Add the user who initiated the interaction to the thread
   await thread.members.add(member.id);
 
+  // Add users with the role STAFF_ROLE_ID to the thread
+  const staffRoleId = process.env.STAFF_ROLE_ID;
+  const staffRole = guild.roles.cache.get(staffRoleId);
+
+  if (staffRole) {
+    const staffMembers = staffRole.members;
+    staffMembers.forEach(async (staffMember) => {
+      await thread.members.add(staffMember.id);
+    });
+  } else {
+    console.error(`Staff role with ID ${staffRoleId} not found.`);
+  }
+
   // Reply to the user with a confirmation message
   await interaction.reply({
-    content: `A new thread has been created for ${department} inquiries. Check your DMs for the link.`,
+    content: `A new private thread has been created for ${department} inquiries. Check your DMs for the link.`,
     ephemeral: true,
   });
 
-  // Get the TICKET_PANEL_CHANNEL_ID from .env
-  const ticketPanelChannelId = process.env.TICKET_PANEL_CHANNEL_ID;
-
-  // Fetch and delete the message in TICKET_PANEL_CHANNEL_ID
-  try {
-    const ticketPanelChannel = guild.channels.cache.get(ticketPanelChannelId);
-    const ticketPanelMessage = await ticketPanelChannel.messages.fetch({ limit: 1 });
-    ticketPanelMessage.first().delete();
-  } catch (error) {
-    console.error(`Error deleting message in TICKET_PANEL_CHANNEL_ID: ${error.message}`);
-  }
 }
 
 module.exports = {
