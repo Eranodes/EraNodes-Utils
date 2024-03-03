@@ -8,8 +8,8 @@ async function handleTicketCreate(interaction) {
   if (!interaction.isStringSelectMenu()) return;
 
   const selectedOption = interaction.values[0];
-  const guild = interaction.guild;
   const member = interaction.member;
+  const guild = interaction.guild;
 
   // Determine the department based on the selected option
   let department;
@@ -35,25 +35,26 @@ async function handleTicketCreate(interaction) {
   // Add the user who initiated the interaction to the thread
   await thread.members.add(member.id);
 
-  // Add users with the role STAFF_ROLE_ID to the thread
+  // Fetch the staff role
   const staffRoleId = process.env.STAFF_ROLE_ID;
   const staffRole = guild.roles.cache.get(staffRoleId);
 
-  if (staffRole) {
-    const staffMembers = staffRole.members;
-    staffMembers.forEach(async (staffMember) => {
-      await thread.members.add(staffMember.id);
-    });
-  } else {
+  if (!staffRole) {
     console.error(`Staff role with ID ${staffRoleId} not found.`);
+    return;
   }
+
+  // Mention the staff role in the welcome message
+  const staffMention = staffRole.toString();
+  
+  // Send a welcome message to the thread
+  await thread.send(`Welcome to the ${department} inquiry thread, ${member.user.username}! ${staffMention} is here to assist you.`);
 
   // Reply to the user with a confirmation message
   await interaction.reply({
     content: `A new private thread has been created for ${department} inquiries. Check your DMs for the link.`,
     ephemeral: true,
   });
-
 }
 
 module.exports = {
