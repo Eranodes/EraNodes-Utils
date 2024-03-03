@@ -1,13 +1,16 @@
+// Import necessary modules and dependencies
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { config } = require('dotenv');
 const fs = require('fs');
 const { log } = require('./utilities/logger');
 const { setupTicketPanel } = require('./utilities/ticket-panel');
-const { handleTicketCreate } = require('./interaction-handlers/ticket-create'); // Import the new interaction handler
+const { handleTicketCreate } = require('./interaction-handlers/ticket-create');
+const { handleTicketClose } = require('./interaction-handlers/ticket-close'); // Import the new interaction handler
 
 // Load environment variables from .env file
 config();
 
+// Create a Discord client
 const bot = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -48,7 +51,7 @@ bot.once('ready', () => {
 });
 
 // Event: Interaction is created
-bot.on('interactionCreate', async interaction => {
+bot.on('interactionCreate', async (interaction) => {
   if (interaction.isCommand()) {
     const { commandName } = interaction;
 
@@ -64,6 +67,9 @@ bot.on('interactionCreate', async interaction => {
   } else if (interaction.isStringSelectMenu()) {
     // Handle ticket creation based on the dropdown selection
     await handleTicketCreate(interaction);
+  } else if (interaction.isButton()) {
+    // Handle ticket closure when the "Close Ticket" button is clicked
+    await handleTicketClose(interaction);
   }
 });
 
