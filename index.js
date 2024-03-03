@@ -1,9 +1,8 @@
-// index.js
-
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { config } = require('dotenv');
 const fs = require('fs');
-const { log } = require('./utilities/logger'); // Importing the logger module
+const { log } = require('./utilities/logger');
+const { setupTicketPanel } = require('./utilities/ticket-panel');
 
 // Load environment variables from .env file
 config();
@@ -29,18 +28,25 @@ for (const file of commandFiles) {
   bot.commands.set(command.data.name, command);
 }
 
+// Event: Bot is ready
 bot.once('ready', () => {
-  log(`Logged in as ${bot.user.tag}!`); // Using the logger to log the bot's readiness
+  log(`Logged in as ${bot.user.tag}!`);
 
   // Register slash commands
   bot.commands.forEach(command => {
     bot.application.commands.create(command.data);
   });
+
+  // Specify the target guild and channel from .env
+  const targetGuildId = process.env.GUILD_ID;
+  const targetChannelId = process.env.TICKET_PANEL_CHANNEL_ID;
+
+  // Setup ticket panel for the specified guild and channel
+  setupTicketPanel(bot, targetGuildId, targetChannelId);
 });
 
+// Event: Interaction is created
 bot.on('interactionCreate', async interaction => {
-  if (!interaction.isCommand() && !interaction.isButton() && !interaction.isStringSelectMenu() && !interaction.isModalSubmit()) return;
-
   if (interaction.isCommand()) {
     const { commandName } = interaction;
 
