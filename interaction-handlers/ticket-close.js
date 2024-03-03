@@ -6,12 +6,6 @@ const { log } = require('../utilities/logger');
  * @param {ButtonInteraction} interaction - The button interaction object.
  */
 async function handleTicketClose(interaction) {
-  // Check if the interaction is a button interaction
-  if (!interaction.isButton()) return;
-
-  // Check if the clicked button has the custom_id 'archive_button'
-  if (interaction.customId !== 'archive_button') return;
-
   try {
     // Check if the channel is a thread
     if (!interaction.channel.isThread()) {

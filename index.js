@@ -5,7 +5,7 @@ const fs = require('fs');
 const { log } = require('./utilities/logger');
 const { setupTicketPanel } = require('./utilities/ticket-panel');
 const { handleTicketCreate } = require('./interaction-handlers/ticket-create');
-const { handleTicketClose } = require('./interaction-handlers/ticket-close'); // Import the new interaction handler
+const { handleTicketClose } = require('./interaction-handlers/ticket-close');
 
 // Load environment variables from .env file
 config();
@@ -17,7 +17,7 @@ const bot = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.MessageContent, // Make sure you include MessageContent intent for interaction handling
+    GatewayIntentBits.MessageContent,
   ],
 });
 
@@ -52,24 +52,33 @@ bot.once('ready', () => {
 
 // Event: Interaction is created
 bot.on('interactionCreate', async (interaction) => {
-  if (interaction.isCommand()) {
-    const { commandName } = interaction;
+  // Check if the interaction is not a valid interaction type
+  if (!interaction.isCommand() && !interaction.isStringSelectMenu() && !interaction.isButton()) {
+    return;
+  }
 
-    // Execute the command
-    if (!bot.commands.has(commandName)) return;
+  // Handle different interaction types
+  try {
+    if (interaction.isCommand()) {
+      const { commandName } = interaction;
 
-    try {
+      // Execute the command
+      if (!bot.commands.has(commandName)) return;
+
       await bot.commands.get(commandName).execute(interaction);
-    } catch (error) {
-      log(`Error executing command "${commandName}": ${error.message}`, 'error');
-      await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    } else if (interaction.isStringSelectMenu()) {
+      // Handle ticket creation based on the dropdown selection
+      await handleTicketCreate(interaction);
+    } else if (interaction.isButton()) {
+      // Check if the clicked button has the custom_id 'archive_button'
+      if (interaction.customId === 'archive_button') {
+        // Handle ticket closure when the "Close Ticket" button is clicked
+        await handleTicketClose(interaction);
+      }
     }
-  } else if (interaction.isStringSelectMenu()) {
-    // Handle ticket creation based on the dropdown selection
-    await handleTicketCreate(interaction);
-  } else if (interaction.isButton()) {
-    // Handle ticket closure when the "Close Ticket" button is clicked
-    await handleTicketClose(interaction);
+  } catch (error) {
+    log(`Error handling interaction: ${error.message}`, 'error');
+    // Add appropriate error handling or reply to the user with an error message
   }
 });
 
