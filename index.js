@@ -3,6 +3,7 @@ const { config } = require('dotenv');
 const fs = require('fs');
 const { log } = require('./utilities/logger');
 const { setupTicketPanel } = require('./utilities/ticket-panel');
+const { handleTicketCreate } = require('./interaction-handlers/ticket-create'); // Import the new interaction handler
 
 // Load environment variables from .env file
 config();
@@ -13,6 +14,7 @@ const bot = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.MessageContent, // Make sure you include MessageContent intent for interaction handling
   ],
 });
 
@@ -59,6 +61,9 @@ bot.on('interactionCreate', async interaction => {
       log(`Error executing command "${commandName}": ${error.message}`, 'error');
       await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
+  } else if (interaction.isStringSelectMenu()) {
+    // Handle ticket creation based on the dropdown selection
+    await handleTicketCreate(interaction);
   }
 });
 
