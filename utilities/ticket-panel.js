@@ -19,6 +19,26 @@ async function setupTicketPanel(bot, guildId, channelId) {
       return;
     }
 
+    // Create the embed
+    const embed = {
+      color: 0x951931,
+      title: 'Ticket Panel',
+      description: 'Please select a department for assistance:',
+      footer: {
+        text: 'EraNodes Ticketing Panel',
+        icon_url: 'attachment://eranodes-transparent.png',
+      },
+    };
+
+    // Send the message with the embed
+    await channel.send({
+      embeds: [embed],
+      files: [{
+        attachment: 'assets/images/eranodes-transparent.png',
+        name: 'eranodes-transparent.png',
+      }],
+    });
+
     // Create a string select menu with options
     const select = new StringSelectMenuBuilder()
       .setCustomId('ticketPanel')
@@ -26,15 +46,17 @@ async function setupTicketPanel(bot, guildId, channelId) {
       .addOptions(
         new StringSelectMenuOptionBuilder()
           .setLabel('General')
-          .setValue('general'),
+          .setValue('general')
+          .setDescription('General inquiries and support.'),
         new StringSelectMenuOptionBuilder()
           .setLabel('Payment')
-          .setValue('payment'),
+          .setValue('payment')
+          .setDescription('Issues related to payments and transactions.'),
       );
 
     // Send the message with the dropdown
     await channel.send({
-      content: 'Please select a department for assistance:',
+      content: 'Please use the dropdown to select a department:',
       components: [
         {
           type: 1,

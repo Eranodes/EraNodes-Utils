@@ -5,8 +5,10 @@ const { Interaction, ChannelType } = require('discord.js');
  * @param {Interaction} interaction - The interaction object.
  */
 async function handleTicketCreate(interaction) {
+  // Check if the interaction is a StringSelectMenu interaction
   if (!interaction.isStringSelectMenu()) return;
 
+  // Retrieve the selected option from the interaction
   const selectedOption = interaction.values[0];
   const member = interaction.member;
   const guild = interaction.guild;
@@ -39,6 +41,7 @@ async function handleTicketCreate(interaction) {
   const staffRoleId = process.env.STAFF_ROLE_ID;
   const staffRole = guild.roles.cache.get(staffRoleId);
 
+  // Check if the staff role exists
   if (!staffRole) {
     console.error(`Staff role with ID ${staffRoleId} not found.`);
     return;
@@ -46,11 +49,28 @@ async function handleTicketCreate(interaction) {
 
   // Mention the staff role in the welcome message
   const staffMention = staffRole.toString();
-  
-  // Send a welcome message to the thread
-  await thread.send(`Welcome to the ${department} inquiry thread, ${member.user.username}! ${staffMention} is here to assist you.`);
 
-  // Reply to the user with a confirmation message
+  // Create an object for the button
+  const archiveButton = {
+    type: 2,
+    style: 4, // DANGER
+    custom_id: 'archive_button',
+    label: 'Close Ticket',
+  };
+
+  // Create a row with the button
+  const row = {
+    type: 1, // ACTION_ROW
+    components: [archiveButton],
+  };
+
+  // Send a welcome message to the thread with the archive button
+  await thread.send({
+    content: `Welcome to the ${department} inquiry thread, ${member.user.username}! ${staffMention} is here to assist you.`,
+    components: [row],
+  });
+
+  // Reply to the user with a confirmation message in DMs (ephemeral)
   await interaction.reply({
     content: `A new private thread has been created for ${department} inquiries. Check your DMs for the link.`,
     ephemeral: true,
