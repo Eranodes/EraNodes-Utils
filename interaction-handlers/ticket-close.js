@@ -5,6 +5,7 @@ const { log } = require('../utilities/logger');
  * Handle the interaction when a user clicks the "Close Ticket" button.
  * @param {ButtonInteraction} interaction - The button interaction object.
  */
+
 async function handleTicketClose(interaction) {
   try {
     // Check if the channel is a thread
@@ -71,7 +72,7 @@ async function handleTicketClose(interaction) {
 
     // Reply to the user with a confirmation message in DMs (ephemeral)
     await interaction.reply({
-      content: 'This ticket has been closed. If you have further inquiries, feel free to open a new ticket.',
+      content: 'This ticket has been closed. Please check your DM!',
       ephemeral: true,
     });
 

@@ -4,6 +4,7 @@ const { Interaction, ChannelType } = require('discord.js');
  * Handle the interaction when a user selects a department from the dropdown.
  * @param {Interaction} interaction - The interaction object.
  */
+
 async function handleTicketCreate(interaction) {
   // Check if the interaction is a StringSelectMenu interaction
   if (!interaction.isStringSelectMenu()) return;
