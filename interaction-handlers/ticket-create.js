@@ -148,7 +148,7 @@ async function handleTicketCreate(interaction) {
 
     // Reply to the user with a confirmation message in DMs (ephemeral)
     await interaction.reply({
-      content: `A new private thread has been created for ${department} inquiries. Check your DMs for the link.`,
+      content: `A new private thread has been created for ${department} inquiries!`,
       ephemeral: true,
     });
 
@@ -156,7 +156,7 @@ async function handleTicketCreate(interaction) {
 
     // Send a welcome message to the thread with the archive button
     await thread.send({
-      content: `Welcome to the ${department} inquiry thread, ${member.user.username}! ${staffMention} is here to assist you.`,
+      content: `Welcome to the ${department} inquiry thread, <@${member.user.id}>! ${staffMention} is here to assist you.`,
       components: [row],
     });
 

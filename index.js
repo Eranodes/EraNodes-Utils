@@ -8,7 +8,6 @@ const { setupTicketPanel } = require('./utilities/ticket-panel');
 const { handleTicketCreate } = require('./interaction-handlers/ticket-create');
 const { handleTicketClose } = require('./interaction-handlers/ticket-close');
 const { handleRating } = require('./interaction-handlers/rating');
-const { handleTagButtonClick } = require('./interaction-handlers/tags'); // Added line for tag interaction handling
 
 // Load environment variables from .env file
 config();
@@ -65,7 +64,7 @@ bot.once('ready', async () => {
 bot.on('interactionCreate', async (interaction) => {
   try {
     // Check if the interaction is not a valid interaction type
-    if (!interaction.isCommand() && !interaction.isStringSelectMenu() && !interaction.isButton()) {
+    if (!interaction.isCommand() && !interaction.isStringSelectMenu() && !interaction.isButton() && !interaction.isMessageComponent()) {
       return;
     }
 
@@ -107,11 +106,8 @@ bot.on('interactionCreate', async (interaction) => {
       if (interaction.customId === 'archive_button') {
         // Handle ticket closure when the "Close Ticket" button is clicked
         await handleTicketClose(interaction);
-      } else if (interaction.customId.startsWith('tag_')) {
-        // Handle tag button click
-        await handleTagButtonClick(interaction);
-      }
-    }
+      } 
+    } 
   } catch (error) {
     log(`Error handling interaction: ${error.message}`, 'error');
     // Add appropriate error handling or reply to the user with an error message
