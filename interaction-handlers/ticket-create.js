@@ -16,9 +16,48 @@ async function handleTicketCreate(interaction) {
       return;
     }
 
+    const member = interaction.member;
+
+    // Check if the user already has an open ticket
+    const existingTicketFolderPath = path.join(__dirname, `../data/tickets/${member.user.id}`);
+
+    try {
+      // Check if the directory exists
+      fs.accessSync(existingTicketFolderPath, fs.constants.F_OK);
+
+      // If the directory exists, check for existing tickets
+      const existingTickets = fs.readdirSync(existingTicketFolderPath);
+
+      if (existingTickets.length > 0) {
+        // Check if any ticket is still open
+        const openTicket = existingTickets.find((ticketId) => {
+          const ticketDataPath = path.join(existingTicketFolderPath, ticketId, 'data.json');
+          try {
+            const ticketData = JSON.parse(fs.readFileSync(ticketDataPath, 'utf-8'));
+            return !ticketData.closeTime; // If closeTime is not present, the ticket is still open
+          } catch (error) {
+            log(`Error reading ticket data file: ${error.message}`, 'error');
+            return false;
+          }
+        });
+
+        if (openTicket) {
+          // User already has an open ticket
+          await interaction.reply({
+            content: 'You already have an open ticket. Please close your existing ticket before creating a new one.',
+            ephemeral: true,
+          });
+
+          log(`User ${member.user.username} already has an open ticket.`);
+          return;
+        }
+      }
+    } catch (error) {
+      // Directory does not exist, proceed with ticket creation
+    }
+
     // Retrieve the selected option from the interaction
     const selectedOption = interaction.values[0];
-    const member = interaction.member;
     const guild = interaction.guild;
 
     // Determine the department based on the selected option
