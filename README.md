@@ -22,7 +22,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 To use EraNodes Utils, create a `.env` file in the root directory with the following variables:
 
 ```env
-BOT_TOKEN=your_bot_token
+BOT_TOKEN=bot_token
 CLIENT_ID=bot_client_id
 GUILD_ID=1199659090088034364
 WEBHOOK_URL=https://discord.com/api/webhooks/{webhook.id}/{webhook.token}
