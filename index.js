@@ -8,7 +8,6 @@ const { handleTicketCreate } = require('./interaction-handlers/ticket-create');
 const { handleTicketClose } = require('./interaction-handlers/ticket-close');
 const { handleRating } = require('./interaction-handlers/rating');
 
-
 // Load environment variables from .env file
 config();
 
@@ -27,48 +26,65 @@ const bot = new Client({
 bot.commands = new Collection();
 
 // Read command files from the "commands" folder
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+try {
+  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
-// Load commands
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  bot.commands.set(command.data.name, command);
+  // Load commands
+  for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    bot.commands.set(command.data.name, command);
+  }
+} catch (error) {
+  log(`Error loading commands: ${error.message}`, 'error');
 }
 
 // Event: Bot is ready
-bot.once('ready', () => {
-  log(`Logged in as ${bot.user.tag}!`);
+bot.once('ready', async () => {
+  try {
+    await log(`Logged in as ${bot.user.tag}!`);
 
-  // Register slash commands
-  bot.commands.forEach(command => {
-    bot.application.commands.create(command.data);
-  });
+    // Register slash commands
+    bot.commands.forEach(async command => {
+      await bot.application.commands.create(command.data);
+    });
 
-  // Specify the target guild and channel from .env
-  const targetGuildId = process.env.GUILD_ID;
-  const targetChannelId = process.env.TICKET_PANEL_CHANNEL_ID;
+    // Specify the target guild and channel from .env
+    const targetGuildId = process.env.GUILD_ID;
+    const targetChannelId = process.env.TICKET_PANEL_CHANNEL_ID;
 
-  // Setup ticket panel for the specified guild and channel
-  setupTicketPanel(bot, targetGuildId, targetChannelId);
+    // Setup ticket panel for the specified guild and channel
+    await setupTicketPanel(bot, targetGuildId, targetChannelId);
+  } catch (error) {
+    log(`Error during bot setup: ${error.message}`, 'error');
+  }
 });
 
 // Event: Interaction is created
 bot.on('interactionCreate', async (interaction) => {
-  // Check if the interaction is not a valid interaction type
-  if (!interaction.isCommand() && !interaction.isStringSelectMenu() && !interaction.isButton()) {
-    return;
-  }
-
-  // Handle different interaction types
   try {
+    // Check if the interaction is not a valid interaction type
+    if (!interaction.isCommand() && !interaction.isStringSelectMenu() && !interaction.isButton()) {
+      return;
+    }
+
+    // Log the interaction type
+    log(`Interaction type: ${interaction.type}`);
+
+    // Handle different interaction types
     if (interaction.isCommand()) {
       const { commandName } = interaction;
+
+      // Log the executed command
+      log(`Command executed: ${commandName}`);
 
       // Execute the command
       if (!bot.commands.has(commandName)) return;
 
       await bot.commands.get(commandName).execute(interaction);
     } else if (interaction.isStringSelectMenu()) {
+      // Log the select menu interaction
+      log('Select menu interaction detected');
+
       // Check the custom ID to determine which select menu was used
       switch (interaction.customId) {
         case 'ticketPanel':
@@ -82,6 +98,9 @@ bot.on('interactionCreate', async (interaction) => {
         // Add other cases if there are more select menus
       }
     } else if (interaction.isButton()) {
+      // Log the button interaction
+      log('Button interaction detected');
+
       // Check if the clicked button has the custom_id 'archive_button'
       if (interaction.customId === 'archive_button') {
         // Handle ticket closure when the "Close Ticket" button is clicked
@@ -93,7 +112,6 @@ bot.on('interactionCreate', async (interaction) => {
     // Add appropriate error handling or reply to the user with an error message
   }
 });
-
 
 // Log in to Discord
 bot.login(process.env.BOT_TOKEN);

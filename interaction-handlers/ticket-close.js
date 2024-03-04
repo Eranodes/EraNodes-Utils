@@ -10,9 +10,11 @@ async function handleTicketClose(interaction) {
   try {
     // Check if the channel is a thread
     if (!interaction.channel.isThread()) {
-      log(`Channel ${interaction.channel.id} is not a valid thread.`);
+      log(`Invalid interaction. Channel ${interaction.channel.id} is not a valid thread.`, 'error');
       return;
     }
+
+    log(`Closing ticket in thread: ${interaction.channel.name} (${interaction.channel.id})`);
 
     // Check if the thread is archived
     if (interaction.channel.archived) {
@@ -22,12 +24,14 @@ async function handleTicketClose(interaction) {
         ephemeral: true,
       });
 
-      log(`Thread ${interaction.channel.name} is already archived.`);
+      log(`Thread ${interaction.channel.name} is already archived. No further action required.`);
       return;
     }
 
     // Mention the user who closed the ticket
     const closedByMention = interaction.user.toString();
+
+    log(`Ticket closed by: ${closedByMention}`);
 
     // Create options for the rating dropdown
     const ratingOptions = [
@@ -76,11 +80,26 @@ async function handleTicketClose(interaction) {
       ephemeral: true,
     });
 
+    log(`User notified about ticket closure: ${closedByMention}`);
+
     // Update channel permissions to disallow sending messages for @everyone
     const everyoneRole = interaction.guild.roles.everyone;
 
+    log(`Updating channel permissions to disallow @everyone in thread: ${interaction.channel.name} (${interaction.channel.id})`);
+
+    try {
+      await interaction.channel.permissionOverwrites.edit(everyoneRole, {
+        SEND_MESSAGES: false,
+      });
+      log(`Permissions updated successfully.`);
+    } catch (permissionError) {
+      log(`Error updating permissions: ${permissionError.message}`, 'error');
+    }
+
     // Archive the thread
     await interaction.channel.setArchived(true);
+
+    log(`Thread archived: ${interaction.channel.name} (${interaction.channel.id})`);
 
     // Send a DM to the user asking for a rating
     await interaction.user.send({
@@ -88,7 +107,8 @@ async function handleTicketClose(interaction) {
       components: [row],
     });
 
-    log(`Ticket closed, thread archived, and rating prompt sent in channel ${interaction.channel.id}.`);
+    log(`Rating prompt sent in DM to: ${closedByMention}`);
+    log(`Ticket closure process completed for thread: ${interaction.channel.name} (${interaction.channel.id}).`);
   } catch (error) {
     log(`Error closing ticket: ${error.message}`, 'error');
     await interaction.reply({

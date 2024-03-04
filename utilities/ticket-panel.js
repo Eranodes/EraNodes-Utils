@@ -11,6 +11,8 @@ async function setupTicketPanel(bot, guildId, channelId) {
       return;
     }
 
+    log(`Fetched guild: ${guild.name} (${guild.id})`);
+
     // Fetch the channel based on the provided channelId
     const channel = await guild.channels.fetch(channelId);
 
@@ -18,6 +20,8 @@ async function setupTicketPanel(bot, guildId, channelId) {
       log(`Channel with ID ${channelId} not found or does not belong to guild ${guild.name}.`, 'error');
       return;
     }
+
+    log(`Fetched channel: ${channel.name} (${channel.id})`);
 
     // Create the embed
     const embed = {
@@ -38,6 +42,8 @@ async function setupTicketPanel(bot, guildId, channelId) {
         name: 'eranodes-transparent.png',
       }],
     });
+
+    log(`Embed sent to channel: ${channel.name} (${channel.id})`);
 
     // Create a string select menu with options
     const select = new StringSelectMenuBuilder()
@@ -65,6 +71,7 @@ async function setupTicketPanel(bot, guildId, channelId) {
       ],
     });
 
+    log(`Dropdown sent to channel: ${channel.name} (${channel.id})`);
     log(`Ticket panel set up in guild ${guild.name}.`);
   } catch (error) {
     log(`Error setting up ticket panel: ${error.message}`, 'error');
