@@ -8,7 +8,7 @@ const { setupTicketPanel } = require('./utilities/ticket-panel');
 const { handleTicketCreate } = require('./interaction-handlers/ticket-create');
 const { handleTicketClose } = require('./interaction-handlers/ticket-close');
 const { handleRating } = require('./interaction-handlers/rating');
-const { handleTagCreate } = require('./interaction-handlers/tagcreate'); // New import
+const { handleTagButtonClick } = require('./interaction-handlers/tags'); // Added line for tag interaction handling
 
 // Load environment variables from .env file
 config();
@@ -65,7 +65,7 @@ bot.once('ready', async () => {
 bot.on('interactionCreate', async (interaction) => {
   try {
     // Check if the interaction is not a valid interaction type
-    if (!interaction.isCommand() && !interaction.isStringSelectMenu() && !interaction.isButton() && !interaction.isModalSubmit()) {
+    if (!interaction.isCommand() && !interaction.isStringSelectMenu() && !interaction.isButton()) {
       return;
     }
 
@@ -107,12 +107,9 @@ bot.on('interactionCreate', async (interaction) => {
       if (interaction.customId === 'archive_button') {
         // Handle ticket closure when the "Close Ticket" button is clicked
         await handleTicketClose(interaction);
-      }
-    } else if (interaction.isModalSubmit()) {
-      // Check if the submitted modal is from the 'tagCreateModal'
-      if (interaction.customId === 'tagCreateModal') {
-        // Handle tag creation based on the modal submission
-        await handleTagCreate(interaction);
+      } else if (interaction.customId.startsWith('tag_')) {
+        // Handle tag button click
+        await handleTagButtonClick(interaction);
       }
     }
   } catch (error) {
