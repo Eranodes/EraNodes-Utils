@@ -1,4 +1,4 @@
-const { ButtonInteraction, Permissions } = require('discord.js');
+const { ButtonInteraction, Permissions, StringSelectMenuBuilder, ActionRowBuilder } = require('discord.js');
 const { log } = require('../utilities/logger');
 
 /**
@@ -28,10 +28,48 @@ async function handleTicketClose(interaction) {
     // Mention the user who closed the ticket
     const closedByMention = interaction.user.toString();
 
-    // Send a closing message in the thread
-    await interaction.channel.send(`This thread has been closed by ${closedByMention}.`);
+    // Create options for the rating dropdown
+    const ratingOptions = [
+      {
+        label: '⭐ 1 Star',
+        value: '1',
+        description: 'Terrible',
+      },
+      {
+        label: '⭐⭐ 2 Stars',
+        value: '2',
+        description: 'Bad',
+      },
+      {
+        label: '⭐⭐⭐ 3 Stars',
+        value: '3',
+        description: 'Neutral',
+      },
+      {
+        label: '⭐⭐⭐⭐ 4 Stars',
+        value: '4',
+        description: 'Good',
+      },
+      {
+        label: '⭐⭐⭐⭐⭐ 5 Stars',
+        value: '5',
+        description: 'Excellent',
+      },
+    ];
 
-    // Send an ephemeral reply
+    // Create the select menu with options
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId('rating_menu')
+      .setPlaceholder('Select a rating');
+
+    ratingOptions.forEach((option) => {
+      selectMenu.addOptions(option);
+    });
+
+    // Create a row with the select menu
+    const row = new ActionRowBuilder().addComponents(selectMenu);
+
+    // Reply to the user with a confirmation message in DMs (ephemeral)
     await interaction.reply({
       content: 'This ticket has been closed. If you have further inquiries, feel free to open a new ticket.',
       ephemeral: true,
@@ -43,7 +81,13 @@ async function handleTicketClose(interaction) {
     // Archive the thread
     await interaction.channel.setArchived(true);
 
-    log(`Ticket closed and thread archived in channel ${interaction.channel.id}.`);
+    // Send a DM to the user asking for a rating
+    await interaction.user.send({
+      content: 'Thank you for using our service! Please rate your ticket experience:',
+      components: [row],
+    });
+
+    log(`Ticket closed, thread archived, and rating prompt sent in channel ${interaction.channel.id}.`);
   } catch (error) {
     log(`Error closing ticket: ${error.message}`, 'error');
     await interaction.reply({

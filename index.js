@@ -6,6 +6,8 @@ const { log } = require('./utilities/logger');
 const { setupTicketPanel } = require('./utilities/ticket-panel');
 const { handleTicketCreate } = require('./interaction-handlers/ticket-create');
 const { handleTicketClose } = require('./interaction-handlers/ticket-close');
+const { handleRating } = require('./interaction-handlers/rating');
+
 
 // Load environment variables from .env file
 config();
@@ -67,8 +69,18 @@ bot.on('interactionCreate', async (interaction) => {
 
       await bot.commands.get(commandName).execute(interaction);
     } else if (interaction.isStringSelectMenu()) {
-      // Handle ticket creation based on the dropdown selection
-      await handleTicketCreate(interaction);
+      // Check the custom ID to determine which select menu was used
+      switch (interaction.customId) {
+        case 'ticketPanel':
+          // Handle ticket creation based on the dropdown selection
+          await handleTicketCreate(interaction);
+          break;
+        case 'rating_menu':
+          // Handle the user's response to the rating dropdown
+          await handleRating(interaction);
+          break;
+        // Add other cases if there are more select menus
+      }
     } else if (interaction.isButton()) {
       // Check if the clicked button has the custom_id 'archive_button'
       if (interaction.customId === 'archive_button') {
@@ -81,6 +93,7 @@ bot.on('interactionCreate', async (interaction) => {
     // Add appropriate error handling or reply to the user with an error message
   }
 });
+
 
 // Log in to Discord
 bot.login(process.env.BOT_TOKEN);
