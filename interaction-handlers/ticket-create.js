@@ -148,7 +148,7 @@ async function handleTicketCreate(interaction) {
 
     // Reply to the user with a confirmation message in DMs (ephemeral)
     await interaction.reply({
-      content: `A new private thread has been created for ${department} inquiries!`,
+      content: `A new ticket been created for ${department} inquiries!`,
       ephemeral: true,
     });
 
