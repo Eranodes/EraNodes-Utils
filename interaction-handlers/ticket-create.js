@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { Interaction, ChannelType } = require('discord.js');
 const { log } = require('../utilities/logger');
 
@@ -45,10 +47,22 @@ async function handleTicketCreate(interaction) {
       type: ChannelType.PrivateThread,
     });
 
-    // Add the user who initiated the interaction to the thread
-    await thread.members.add(member.id);
+    // Save ticket creation data to JSON file
+    const ticketData = {
+      userId: member.user.id,
+      threadId: thread.id,
+      department,
+      openTime: new Date().toISOString(),
+    };
 
-    log(`Private thread created: ${channelName} (${thread.id})`);
+    const ticketFolderPath = path.join(__dirname, `../data/tickets/${member.user.id}/${thread.id}`);
+    const ticketDataPath = path.join(ticketFolderPath, 'data.json');
+
+    // Ensure the ticket folder exists
+    fs.mkdirSync(ticketFolderPath, { recursive: true });
+
+    // Write ticket data to JSON file
+    fs.writeFileSync(ticketDataPath, JSON.stringify(ticketData, null, 2));
 
     // Fetch the staff role and other role IDs
     const staffRoleId = process.env.STAFF_ROLE_ID;

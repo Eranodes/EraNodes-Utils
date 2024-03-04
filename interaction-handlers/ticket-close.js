@@ -1,4 +1,6 @@
-const { ButtonInteraction, Permissions, StringSelectMenuBuilder, ActionRowBuilder } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
+const { ButtonInteraction, StringSelectMenuBuilder } = require('discord.js');
 const { log } = require('../utilities/logger');
 
 /**
@@ -17,7 +19,7 @@ async function handleTicketClose(interaction) {
     log(`Closing ticket in thread: ${interaction.channel.name} (${interaction.channel.id})`);
 
     // Check if the thread is archived
-    if (interaction.channel.archived) {
+    if (interaction.channel.parent?.archived) {
       // If already archived, reply with a message indicating that it's already closed
       await interaction.reply({
         content: 'This ticket is already closed. If you have further inquiries, feel free to open a new ticket.',
@@ -33,46 +35,17 @@ async function handleTicketClose(interaction) {
 
     log(`Ticket closed by: ${closedByMention}`);
 
-    // Create options for the rating dropdown
-    const ratingOptions = [
-      {
-        label: '⭐ 1 Star',
-        value: '1',
-        description: 'Terrible',
-      },
-      {
-        label: '⭐⭐ 2 Stars',
-        value: '2',
-        description: 'Bad',
-      },
-      {
-        label: '⭐⭐⭐ 3 Stars',
-        value: '3',
-        description: 'Neutral',
-      },
-      {
-        label: '⭐⭐⭐⭐ 4 Stars',
-        value: '4',
-        description: 'Good',
-      },
-      {
-        label: '⭐⭐⭐⭐⭐ 5 Stars',
-        value: '5',
-        description: 'Excellent',
-      },
-    ];
+    // Save ticket close data to JSON file
+    const ticketDataPath = path.join(__dirname, `../data/tickets/${interaction.user.id}/${interaction.channel.id}/data.json`);
 
-    // Create the select menu with options
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId('rating_menu')
-      .setPlaceholder('Select a rating');
+    // Read existing ticket data
+    const existingTicketData = fs.existsSync(ticketDataPath) ? JSON.parse(fs.readFileSync(ticketDataPath, 'utf-8')) : {};
 
-    ratingOptions.forEach((option) => {
-      selectMenu.addOptions(option);
-    });
+    // Update ticket data with close time
+    existingTicketData.closeTime = new Date().toISOString();
 
-    // Create a row with the select menu
-    const row = new ActionRowBuilder().addComponents(selectMenu);
+    // Write updated ticket data to JSON file
+    fs.writeFileSync(ticketDataPath, JSON.stringify(existingTicketData, null, 2));
 
     // Reply to the user with a confirmation message in DMs (ephemeral)
     await interaction.reply({
@@ -82,29 +55,39 @@ async function handleTicketClose(interaction) {
 
     log(`User notified about ticket closure: ${closedByMention}`);
 
-    // Update channel permissions to disallow sending messages for @everyone
-    const everyoneRole = interaction.guild.roles.everyone;
-
-    log(`Updating channel permissions to disallow @everyone in thread: ${interaction.channel.name} (${interaction.channel.id})`);
-
     try {
-      await interaction.channel.permissionOverwrites.edit(everyoneRole, {
-        SEND_MESSAGES: false,
-      });
-      log(`Permissions updated successfully.`);
-    } catch (permissionError) {
-      log(`Error updating permissions: ${permissionError.message}`, 'error');
+      // Attempt to archive the channel directly
+      await interaction.channel.setArchived(true);
+      log(`Channel archived directly: ${interaction.channel.name} (${interaction.channel.id})`);
+    } catch (error) {
+      log(`Error archiving channel: ${error.message}`, 'error');
     }
 
-    // Archive the thread
-    await interaction.channel.setArchived(true);
-
-    log(`Thread archived: ${interaction.channel.name} (${interaction.channel.id})`);
-
     // Send a DM to the user asking for a rating
+    const ratingOptions = [
+      { label: '⭐ 1 Star', value: '1', description: 'Terrible' },
+      { label: '⭐⭐ 2 Stars', value: '2', description: 'Bad' },
+      { label: '⭐⭐⭐ 3 Stars', value: '3', description: 'Neutral' },
+      { label: '⭐⭐⭐⭐ 4 Stars', value: '4', description: 'Good' },
+      { label: '⭐⭐⭐⭐⭐ 5 Stars', value: '5', description: 'Excellent' },
+    ];
+
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId('rating_menu')
+      .setPlaceholder('Select a rating');
+
+    ratingOptions.forEach((option) => {
+      selectMenu.addOptions(option);
+    });
+
     await interaction.user.send({
       content: 'Thank you for using our service! Please rate your ticket experience:',
-      components: [row],
+      components: [
+        {
+          type: 1, // ACTION_ROW
+          components: [selectMenu],
+        },
+      ],
     });
 
     log(`Rating prompt sent in DM to: ${closedByMention}`);
