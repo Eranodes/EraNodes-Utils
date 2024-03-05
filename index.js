@@ -10,6 +10,7 @@ const { handleTicketClose } = require('./interaction-handlers/ticket-close');
 const { handleRating } = require('./interaction-handlers/rating');
 const { handleTagCreate } = require('./interaction-handlers/tagcreate');
 const { handleTagSelection } = require('./interaction-handlers/tags');
+const { handleShowcaseInteraction } = require('./interaction-handlers/showcase');
 
 // Load environment variables from .env file
 config();
@@ -117,6 +118,9 @@ bot.on('interactionCreate', async (interaction) => {
       if (interaction.customId === 'tagCreateModal') {
         // Handle tag creation based on the modal submission
         await handleTagCreate(interaction);
+      } else if (interaction.customId === 'serverInfoModal') {
+        // Handle showcase interaction
+        await handleShowcaseInteraction(interaction);
       }
     }
   } catch (error) {
