@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { SlashCommandBuilder } = require('discord.js');
+const { log } = require('../utilities/logger');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -20,6 +21,8 @@ module.exports = {
           content: 'You do not have permission to use this command.',
           ephemeral: true,
         });
+
+        log(`User ${interaction.user.tag} attempted to use /tagdelete without permission.`, 'warn');
         return;
       }
 
@@ -35,6 +38,8 @@ module.exports = {
           content: `The tag "${tagName}" does not exist.`,
           ephemeral: true,
         });
+
+        log(`User ${interaction.user.tag} attempted to delete nonexistent tag "${tagName}".`, 'warn');
         return;
       }
 
@@ -46,9 +51,15 @@ module.exports = {
         content: `Tag "${tagName}" has been deleted successfully.`,
         ephemeral: true,
       });
+
+      log(`User ${interaction.user.tag} deleted tag "${tagName}".`, 'info');
     } catch (error) {
-      console.error(`Error executing /tagdelete command: ${error.message}`);
+      log(`Error executing /tagdelete command: ${error.message}`, 'error');
       // Handle the error or respond accordingly
+      await interaction.reply({
+        content: 'An error occurred while processing your request. Please try again later.',
+        ephemeral: true,
+      });
     }
   },
 };

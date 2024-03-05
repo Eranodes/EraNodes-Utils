@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { log } = require('../utilities/logger');
 
 module.exports = {
   async handleTagSelection(interaction) {
@@ -25,6 +26,8 @@ module.exports = {
           content: `The selected tag "${tagName}" does not exist.`,
           ephemeral: true,
         });
+
+        log(`User ${interaction.user.tag} attempted to view nonexistent tag "${tagName}".`, 'warn');
         return;
       }
 
@@ -46,9 +49,15 @@ module.exports = {
 
       // Send the embed to the channel
       await interaction.channel.send({ embeds: [embedData] });
+
+      log(`User ${interaction.user.tag} viewed tag "${tagName}".`, 'info');
     } catch (error) {
-      console.error(`Error handling tag selection: ${error.message}`);
-      // Add appropriate error handling or reply to the user with an error message
+      log(`Error handling tag selection: ${error.message}`, 'error');
+      // Handle the error or respond accordingly
+      await interaction.followUp({
+        content: 'An error occurred while processing your request. Please try again later.',
+        ephemeral: true,
+      });
     }
   },
 };

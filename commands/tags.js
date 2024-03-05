@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+const { log } = require('../utilities/logger');
 
 module.exports = {
   data: {
@@ -32,9 +33,16 @@ module.exports = {
         components: [tagActionRow],
         ephemeral: true,
       });
+
+      log(`User ${interaction.user.tag} executed /tags command successfully.`, 'info');
+      
     } catch (error) {
-      console.error(`Error executing /tags command: ${error.message}`);
+      log(`Error executing /tags command: ${error.message}`, 'error');
       // Handle the error or respond accordingly
+      await interaction.reply({
+        content: 'An error occurred while processing your request. Please try again later.',
+        ephemeral: true,
+      });
     }
   },
 };

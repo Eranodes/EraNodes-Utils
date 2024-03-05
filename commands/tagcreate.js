@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+const { log } = require('../utilities/logger');
 
 module.exports = {
   data: {
@@ -16,6 +17,8 @@ module.exports = {
           content: 'You do not have permission to use this command.',
           ephemeral: true,
         });
+
+        log(`User ${interaction.user.tag} attempted to use /tagcreate without permission.`, 'warn');
         return;
       }
 
@@ -45,10 +48,16 @@ module.exports = {
 
       // Show the modal to the user
       await interaction.showModal(tagCreateModal);
+
+      log(`User ${interaction.user.tag} executed /tagcreate command successfully.`, 'info');
       
     } catch (error) {
-      console.error(`Error executing /tagcreate command: ${error.message}`);
+      log(`Error executing /tagcreate command: ${error.message}`, 'error');
       // Handle the error or respond accordingly
+      await interaction.reply({
+        content: 'An error occurred while processing your request. Please try again later.',
+        ephemeral: true,
+      });
     }
   },
 };
