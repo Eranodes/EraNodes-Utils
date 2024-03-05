@@ -13,6 +13,16 @@ module.exports = {
     ),
   async execute(interaction) {
     try {
+      // Check if the user has the required administrative role
+      const adminRoleId = process.env.ADMINISTRATIVE_ROLE_ID;
+      if (!interaction.member.roles.cache.has(adminRoleId)) {
+        await interaction.reply({
+          content: 'You do not have permission to use this command.',
+          ephemeral: true,
+        });
+        return;
+      }
+
       // Get the tag name from the user's input
       const tagName = interaction.options.getString('tag');
 
