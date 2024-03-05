@@ -57,24 +57,28 @@ module.exports = {
           const serverInfo = await getMinecraftServerInfo(serverAddress);
 
           // Send the data to the webhook
+          const user = interaction.user;
           const webhook = new WebhookClient({ url: process.env.SHOWCASE_WEBHOOK_URL });
 
           await webhook.send({
+            username: user.username, // Set the webhook name to the user's username
+            avatarURL: user.displayAvatarURL({ dynamic: true }), // Set the webhook icon to the user's profile picture
             content: 'Minecraft Server Showcase',
             embeds: [
               {
-                title: 'Server Information',
+                title: `${matchingAddress.flag} ${serverName}`, // Add flag to the beginning of the embed title
+                description: serverDescription,
+                color: 0x00FF00, // Set the embed color to green
                 fields: [
-                  { name: 'Address', value: rawServerAddress, inline: true }, // Include the original input with port
-                  { name: 'Name', value: serverName, inline: true },
-                  { name: 'Description', value: serverDescription },
-                  { name: 'Location', value: matchingAddress.location, inline: true },
-                  { name: 'Flag', value: matchingAddress.flag, inline: true },
-                  { name: 'Resolved IP Addresses', value: resolvedIPs.join('\n') }, // Include resolved IP addresses in the embed
-                  { name: 'Minecraft Server Status', value: serverInfo.status, inline: true }, // Include Minecraft server status
-                  { name: 'Players Online', value: serverInfo.players, inline: true },
-                  { name: 'Server Version', value: serverInfo.version, inline: true },
+                  { name: 'Address', value: rawServerAddress, inline: false },
+                  { name: 'Minecraft Server Status', value: serverInfo.status, inline: false },
+                  { name: 'Players Online', value: serverInfo.players, inline: false },
+                  { name: 'Server Version', value: serverInfo.version, inline: false },
+                  { name: 'Server MOTD', value: `\`\`\`${serverInfo.motd}\`\`\``, inline: false }, // Include server MOTD as a code block
                 ],
+                footer: {
+                  text: matchingAddress.location, // Set location in the footer
+                },
               },
             ],
           });
@@ -122,12 +126,14 @@ async function getMinecraftServerInfo(serverAddress) {
         status: 'Online',
         players: `${response.players.online}/${response.players.max}`,
         version: response.version,
+        motd: response.motd.clean, // Extract the clean MOTD
       };
     } else {
       return {
         status: 'Offline',
         players: 'N/A',
         version: 'N/A',
+        motd: 'N/A',
       };
     }
   } catch (error) {
@@ -136,6 +142,7 @@ async function getMinecraftServerInfo(serverAddress) {
       status: 'Error',
       players: 'N/A',
       version: 'N/A',
+      motd: 'N/A',
     };
   }
 }
