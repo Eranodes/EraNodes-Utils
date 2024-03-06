@@ -6,7 +6,7 @@ const { log } = require('../utilities/logger');
 module.exports = {
   data: {
     name: 'showcase',
-    description: 'Collect Minecraft server information using a modal.',
+    description: 'Showcase your minecraft',
   },
   async execute(interaction) {
     try {
