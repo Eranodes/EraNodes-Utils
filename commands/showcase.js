@@ -43,7 +43,7 @@ module.exports = {
       await interaction.showModal(serverInfoModal);
     } catch (error) {
       log(`Error executing showcase command: ${error.message}`, 'error');
-      await interaction.reply({ content: 'An error occurred while processing your request.', ephemeral: true });
+      await interaction.reply({ content: 'An error occurred while processing your request. Did you provide the correct details?', ephemeral: true });
     }
   },
 };
