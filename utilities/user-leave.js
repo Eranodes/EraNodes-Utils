@@ -1,6 +1,8 @@
-const { Client, GatewayIntentBits, Collection, TextChannel } = require('discord.js');
+// Import necessary modules and dependencies
+const { Client, GatewayIntentBits, TextChannel } = require('discord.js');
 const { config } = require('dotenv');
 const { log } = require('./logger');
+const fs = require('fs').promises;
 
 // Load environment variables from .env file
 config();
@@ -24,30 +26,57 @@ bot.login(process.env.BOT_TOKEN)
     });
 
 /**
+ * Updates the 'left-guild' property for a user in the invite data JSON file.
+ * If the user has multiple entries, updates the last entry.
+ * @param {string} inviterId - The Discord ID of the user who invited.
+ * @param {string} invitedUserId - The Discord ID of the user who left.
+ */
+async function updateInviteData(inviterId, invitedUserId) {
+    try {
+        // Define the path to the JSON file based on the inviter
+        const filePath = `./data/invites/${inviterId}.json`;
+
+        // Read the existing invite data from the JSON file
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+        const existingData = JSON.parse(fileContent);
+
+        // Find all entries for the user who left
+        const userEntries = existingData.filter(entry => entry.invitedUserId === invitedUserId);
+
+        // Update the 'left-guild' property with the current timestamp for the last entry
+        if (userEntries.length > 0) {
+            const lastEntry = userEntries[userEntries.length - 1];
+            lastEntry['left-guild'] = new Date().toISOString();
+        }
+
+        // Write the updated invitation data back to the JSON file
+        await fs.writeFile(filePath, JSON.stringify(existingData, null, 2));
+
+        log(`Invite data updated for user ${invitedUserId} in ${inviterId}.json`, 'info');
+    } catch (error) {
+        log(`Error updating invite data: ${error.message}`, 'error');
+    }
+}
+
+/**
  * Sends a farewell message to a user in DM and a specific channel when they leave the server.
  * @param {GuildMember} member - The GuildMember object representing the user who left.
  */
 async function sendFarewellMessage(member) {
     try {
-        // Construct the farewell message for DM
-        const farewellMessageDM = {
-            content: `**Goodbye, ${member.user.tag}!**\nWe're sorry to see you leave.`,
-            embeds: [
-                {
-                    title: `Goodbye, ${member.user.tag}!`,
-                    description: "We're sorry to see you leave.",
-                    color: 0x951931,
-                    footer: {
-                        text: 'EraNodes',
-                        icon_url: 'https://github.com/Eranodes/.github/blob/main/icons/eranodes-transparent.png?raw=true',
-                    },
-                },
-            ],
-        };
+        // Get the invites for the guild
+        const invites = await member.guild.invites.fetch();
 
-        // Send the farewell message in DM
-        await member.send(farewellMessageDM);
-        log(`Farewell message sent to ${member.user.tag} in DM`, 'info');
+        // Find the invite used by the leaving member
+        const inviteUsed = invites.find(invite => invite.uses > 0);
+
+        // Extract inviter details
+        const inviter = inviteUsed ? inviteUsed.inviter : null;
+
+        // Save invite data to a JSON file
+        if (inviter) {
+            await updateInviteData(inviter.id, member.user.id);
+        }
 
         // Construct the farewell message for the specified channel
         const farewellMessageChannel = {
