@@ -16,7 +16,12 @@ const bot = new Client({
 });
 
 // Log in to Discord
-bot.login(process.env.BOT_TOKEN);
+bot.login(process.env.BOT_TOKEN)
+    .then(() => log('Bot logged in successfully', 'info'))
+    .catch((error) => {
+        log(`Error logging in: ${error.message}`, 'error');
+        process.exit(1); // Exit the process in case of login failure
+    });
 
 /**
  * Sends a farewell message to a user in DM and a specific channel when they leave the server.
@@ -31,7 +36,7 @@ async function sendFarewellMessage(member) {
                 {
                     title: `Goodbye, ${member.user.tag}!`,
                     description: "We're sorry to see you leave.",
-                    color: 0x951931, 
+                    color: 0x951931,
                     footer: {
                         text: 'EraNodes',
                         icon_url: 'https://github.com/Eranodes/.github/blob/main/icons/eranodes-transparent.png?raw=true',
@@ -42,6 +47,7 @@ async function sendFarewellMessage(member) {
 
         // Send the farewell message in DM
         await member.send(farewellMessageDM);
+        log(`Farewell message sent to ${member.user.tag} in DM`, 'info');
 
         // Construct the farewell message for the specified channel
         const farewellMessageChannel = {
@@ -69,12 +75,29 @@ async function sendFarewellMessage(member) {
 
         // Send the farewell message to the specified channel using the GOODBYE_CHANNEL_ID from .env
         const goodbyeChannelId = process.env.GOODBYE_CHANNEL_ID;
-        const goodbyeChannel = await bot.channels.fetch(goodbyeChannelId);
+        if (!goodbyeChannelId) {
+            log('GOODBYE_CHANNEL_ID not provided in the environment variables', 'error');
+            return;
+        }
+
+        const goodbyeChannel = await bot.channels.fetch(goodbyeChannelId)
+            .catch((error) => {
+                log(`Error fetching goodbye channel (${goodbyeChannelId}): ${error.message}`, 'error');
+                throw error;
+            });
+
         if (goodbyeChannel && goodbyeChannel instanceof TextChannel) {
-            await goodbyeChannel.send(farewellMessageChannel);
+            await goodbyeChannel.send(farewellMessageChannel)
+                .catch((error) => {
+                    log(`Error sending farewell message to ${goodbyeChannel.name}: ${error.message}`, 'error');
+                    throw error;
+                });
+            log(`Farewell message sent to ${goodbyeChannel.name} for ${member.user.tag}`, 'info');
+        } else {
+            log(`Goodbye channel (${goodbyeChannelId}) not found or not a TextChannel`, 'warn');
         }
     } catch (error) {
-        console.error(`Error sending farewell message to ${member.user.tag}: ${error.message}`);
+        log(`Error processing farewell message for ${member.user.tag}: ${error.message}`, 'error');
     }
 }
 

@@ -15,7 +15,12 @@ const bot = new Client({
 });
 
 // Log in to Discord
-bot.login(process.env.BOT_TOKEN);
+bot.login(process.env.BOT_TOKEN)
+    .then(() => log('Bot logged in successfully', 'info'))
+    .catch((error) => {
+        log(`Error logging in: ${error.message}`, 'error');
+        process.exit(1); // Exit the process in case of login failure
+    });
 
 /**
  * Sends a welcome message to a user in DM and a specific channel when they join the server.
@@ -58,13 +63,14 @@ async function sendWelcomeMessage(member) {
 
         // Send the welcome message in DM
         await member.send(welcomeMessageDM);
+        log(`Welcome message sent to ${member.user.tag} in DM`, 'info');
 
         // Construct the welcome message for the specified channel
         const welcomeMessageChannel = {
-            content: `Welcome, ${member}!`, 
+            content: `Welcome, ${member}!`,
             embeds: [
                 {
-                    title: `${member.user.tag} Joined!`, 
+                    title: `${member.user.tag} Joined!`,
                     color: 0x36c7f2,
                     thumbnail: {
                         url: member.user.displayAvatarURL({ dynamic: true, size: 256 }),
@@ -85,12 +91,24 @@ async function sendWelcomeMessage(member) {
 
         // Send the welcome message to the specified channel using the WELCOME_CHANNEL_ID from .env
         const welcomeChannelId = process.env.WELCOME_CHANNEL_ID;
-        const welcomeChannel = await bot.channels.fetch(welcomeChannelId);
+        const welcomeChannel = await bot.channels.fetch(welcomeChannelId)
+            .catch((error) => {
+                log(`Error fetching welcome channel (${welcomeChannelId}): ${error.message}`, 'error');
+                throw error;
+            });
+
         if (welcomeChannel && welcomeChannel instanceof TextChannel) {
-            await welcomeChannel.send(welcomeMessageChannel);
+            await welcomeChannel.send(welcomeMessageChannel)
+                .catch((error) => {
+                    log(`Error sending welcome message to ${welcomeChannel.name}: ${error.message}`, 'error');
+                    throw error;
+                });
+            log(`Welcome message sent to ${welcomeChannel.name} for ${member.user.tag}`, 'info');
+        } else {
+            log(`Welcome channel (${welcomeChannelId}) not found or not a TextChannel`, 'warn');
         }
     } catch (error) {
-        console.error(`Error sending welcome message to ${member.user.tag}: ${error.message}`);
+        log(`Error processing welcome message for ${member.user.tag}: ${error.message}`, 'error');
     }
 }
 
