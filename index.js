@@ -12,6 +12,7 @@ const { handleTagCreate } = require('./interaction-handlers/tagcreate');
 const { handleTagSelection } = require('./interaction-handlers/tags');
 const { handleShowcaseInteraction } = require('./interaction-handlers/showcase');
 const { sendWelcomeMessage } = require('./utilities/user-join');
+const { sendFarewellMessage } = require('./utilities/user-leave');
 
 // Load environment variables from .env file
 config();
@@ -68,6 +69,12 @@ bot.once('ready', async () => {
 bot.on('guildMemberAdd', (member) => {
   // Call the sendWelcomeMessage function when a user joins
   sendWelcomeMessage(member);
+});
+
+// Event: User leaves the server
+bot.on('guildMemberRemove', (member) => {
+  // Call the sendFarewellMessage function when a user leaves
+  sendFarewellMessage(member);
 });
 
 // Event: Interaction is created
