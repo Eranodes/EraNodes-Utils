@@ -33,26 +33,36 @@ bot.login(process.env.BOT_TOKEN)
  */
 async function updateInviteData(inviterId, invitedUserId) {
     try {
-        // Define the path to the JSON file based on the inviter
-        const filePath = `./data/invites/${inviterId}.json`;
+        // Define the path to the directory based on the inviter and invited user
+        const inviterDir = `./data/invites/${inviterId}`;
+        const filePath = `${inviterDir}/${invitedUserId}.json`;
+
+        // Ensure the directory for the inviter exists
+        await fs.mkdir(inviterDir, { recursive: true });
 
         // Read the existing invite data from the JSON file
-        const fileContent = await fs.readFile(filePath, 'utf-8');
-        const existingData = JSON.parse(fileContent);
+        let existingData = [];
 
-        // Find all entries for the user who left
-        const userEntries = existingData.filter(entry => entry.invitedUserId === invitedUserId);
-
-        // Update the 'left-guild' property with the current timestamp for the last entry
-        if (userEntries.length > 0) {
-            const lastEntry = userEntries[userEntries.length - 1];
-            lastEntry['left-guild'] = new Date().toISOString();
+        try {
+            const fileContent = await fs.readFile(filePath, 'utf-8');
+            existingData = JSON.parse(fileContent);
+        } catch (readError) {
+            // Ignore errors if the file doesn't exist
         }
+
+        // Create an entry for the current invitation data
+        const entry = {
+            leavetimestamp: new Date().toISOString(),
+            // Add any other relevant information you want to include
+        };
+
+        // Append the new entry to the existing data
+        existingData.push(entry);
 
         // Write the updated invitation data back to the JSON file
         await fs.writeFile(filePath, JSON.stringify(existingData, null, 2));
 
-        log(`Invite data updated for user ${invitedUserId} in ${inviterId}.json`, 'info');
+        log(`Invite data updated for user ${invitedUserId} in ${inviterId}/${invitedUserId}.json`, 'info');
     } catch (error) {
         log(`Error updating invite data: ${error.message}`, 'error');
     }

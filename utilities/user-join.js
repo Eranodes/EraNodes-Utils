@@ -26,17 +26,23 @@ bot.login(process.env.BOT_TOKEN)
     });
 
 /**
- * Appends invitation data to an existing JSON file or creates a new file if it doesn't exist.
- * @param {Object} invite - The Invite object containing information about the invitation.
+ * Updates the 'left-guild' property for a user in the invite data JSON file.
+ * If the user has multiple entries, updates the last entry.
+ * @param {string} inviterId - The Discord ID of the user who invited.
+ * @param {string} invitedUserId - The Discord ID of the user who left.
  */
-async function appendInviteData(invite) {
+async function updateInviteData(inviterId, invitedUserId) {
     try {
-        // Define the path to the JSON file based on the user who invited
-        const filePath = `./data/invites/${invite.inviter.id}.json`;
+        // Define the path to the directory based on the inviter
+        const inviterDir = `./data/invites/${inviterId}`;
+        const filePath = `${inviterDir}/${invitedUserId}.json`;
 
+        // Ensure the directory for the inviter exists
+        await fs.mkdir(inviterDir, { recursive: true });
+
+        // Read the existing invite data from the JSON file
         let existingData = [];
-        
-        // Check if the file already exists
+
         try {
             const fileContent = await fs.readFile(filePath, 'utf-8');
             existingData = JSON.parse(fileContent);
@@ -46,22 +52,19 @@ async function appendInviteData(invite) {
 
         // Create an entry for the current invitation data
         const entry = {
-            invitedUserId: invite.invitedUser.id,
-            invitedUsername: invite.invitedUser.username,
-            timestamp: new Date().toISOString(),
-            url: invite.url,
+            jointimestamp: new Date().toISOString(),
             // Add any other relevant information you want to include
         };
 
         // Append the new entry to the existing data
         existingData.push(entry);
 
-        // Write the updated invitation data to the JSON file
+        // Write the updated invitation data back to the JSON file
         await fs.writeFile(filePath, JSON.stringify(existingData, null, 2));
 
-        log(`Invite data appended for user ${invite.inviter.tag}`, 'info');
+        log(`Invite data updated for user ${invitedUserId} in ${inviterId}/${invitedUserId}.json`, 'info');
     } catch (error) {
-        log(`Error appending invite data: ${error.message}`, 'error');
+        log(`Error updating invite data: ${error.message}`, 'error');
     }
 }
 
@@ -82,17 +85,7 @@ async function sendWelcomeMessage(member) {
 
         // Save invite data to a JSON file
         if (inviter) {
-            await appendInviteData({
-                inviter: {
-                    id: inviter.id,
-                    tag: inviter.tag,
-                },
-                invitedUser: {
-                    id: member.user.id,
-                    username: member.user.username,
-                },
-                url: inviteUsed.url,
-            });
+            await updateInviteData(inviter.id, member.user.id);
         }
 
         // Construct the welcome message for DM
