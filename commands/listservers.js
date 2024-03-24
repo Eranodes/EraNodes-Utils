@@ -5,6 +5,9 @@ const { config } = require('dotenv');
 
 config();
 
+// Load the administrative role ID from .env
+const ADMINISTRATIVE_ROLE_ID = process.env.ADMINISTRATIVE_ROLE_ID;
+
 module.exports = {
   data: {
     name: 'listservers',
@@ -12,6 +15,12 @@ module.exports = {
   },
   async execute(interaction) {
     try {
+      // Check if the user has the administrative role
+      if (!interaction.member.roles.cache.has(ADMINISTRATIVE_ROLE_ID)) {
+        return await interaction.reply('You do not have permission to execute this command.');
+      }
+
+      // Proceed with the command execution
       const panelUrl = process.env.PTERODACTYL_PANEL_URL;
       const apiKey = process.env.PTERODACTYL_API_KEY;
 
@@ -75,7 +84,7 @@ module.exports = {
           // Construct field for the current server
           const serverField = {
             name: serverDetails.name,
-            value: `**ID:** ${serverDetails.identifier}\n${serverDetails.description ? `**Description:** ${serverDetails.description}\n` : ''}**Owner:** ${ownerDetails.username} (${ownerDetails.email})\n**Node:** ${nodeDetails.name}\n**Panel URL:** ${panelUrl}/server/${serverDetails.identifier}`,
+            value: `**ID:** ${serverDetails.identifier}\n${serverDetails.description ? `**Description:** ${serverDetails.description}\n` : ''}**Owner:** ${ownerDetails.username}\n**Node:** ${nodeDetails.name}\n**Panel URL:** ${panelUrl}/server/${serverDetails.identifier}`,
             inline: false,
           };
 
