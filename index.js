@@ -4,10 +4,6 @@ const { config } = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 const { log } = require('./utilities/logger');
-const { setupTicketPanel } = require('./utilities/ticket-panel');
-const { handleTicketCreate } = require('./interaction-handlers/ticket-create');
-const { handleTicketClose } = require('./interaction-handlers/ticket-close');
-const { handleRating } = require('./interaction-handlers/rating');
 const { handleTagCreate } = require('./interaction-handlers/tagcreate');
 const { handleTagSelection } = require('./interaction-handlers/tags');
 const { handleShowcaseInteraction } = require('./interaction-handlers/showcase');
@@ -49,21 +45,28 @@ bot.once('ready', async () => {
   try {
     await log(`Logged in as ${bot.user.tag}!`);
 
+    // Get all existing commands registered by the bot
+    const existingCommands = await bot.application.commands.fetch();
+
+    // Delete any old commands that are no longer present
+    for (const existingCommand of existingCommands.values()) {
+      if (!bot.commands.has(existingCommand.name)) {
+        await existingCommand.delete();
+        log(`Deleted old command: ${existingCommand.name}`);
+      }
+    }
+
     // Register slash commands
-    bot.commands.forEach(async command => {
+    for (const command of bot.commands.values()) {
       await bot.application.commands.create(command.data);
-    });
+      log(`Registered command: ${command.data.name}`);
+    }
 
-    // Specify the target guild and channel from .env
-    const targetGuildId = process.env.GUILD_ID;
-    const targetChannelId = process.env.TICKET_PANEL_CHANNEL_ID;
-
-    // Setup ticket panel for the specified guild and channel
-    await setupTicketPanel(bot, targetGuildId, targetChannelId);
   } catch (error) {
     log(`Error during bot setup: ${error.message}`, 'error');
   }
 });
+
 
 // Event: User joins the server
 bot.on('guildMemberAdd', (member) => {
@@ -103,27 +106,10 @@ bot.on('interactionCreate', async (interaction) => {
       // Log the select menu interaction
       log('Select menu interaction detected');
 
-      // Check the custom ID to determine which select menu was used
-      switch (interaction.customId) {
-        case 'ticketPanel':
-          // Handle ticket creation based on the dropdown selection
-          await handleTicketCreate(interaction);
-          break;
-        case 'rating_menu':
-          // Handle the user's response to the rating dropdown
-          await handleRating(interaction);
-          break;
-        // Add other cases if there are more select menus
-      }
     } else if (interaction.isButton()) {
       // Log the button interaction
       log('Button interaction detected');
-
-      // Check if the clicked button has the custom_id 'archive_button'
-      if (interaction.customId === 'archive_button') {
-        // Handle ticket closure when the "Close Ticket" button is clicked
-        await handleTicketClose(interaction);
-      } else if (interaction.customId.startsWith('viewTag_')) {
+     if (interaction.customId.startsWith('viewTag_')) {
         // Handle tag selection when a tag button is clicked
         await handleTagSelection(interaction);
       }
