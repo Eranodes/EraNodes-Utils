@@ -13,6 +13,17 @@ const { sendFarewellMessage } = require('./utilities/user-leave');
 // Load environment variables from .env file
 config();
 
+// Read package.json file
+const packageJson = require('./package.json');
+
+// Log package details
+log(`Bot Name: ${packageJson.name}`);
+log(`Version: ${packageJson.version}`);
+log(`Description: ${packageJson.description}`);
+log(`Author: ${packageJson.author}`);
+log(`License: ${packageJson.license}`);
+
+
 // Create a Discord client
 const bot = new Client({
   intents: [

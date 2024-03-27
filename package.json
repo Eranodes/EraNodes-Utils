@@ -1,7 +1,7 @@
 {
-  "name": "eranodes-utils",
+  "name": "EraNodes-Utils",
   "version": "1.0.0",
-  "description": "A cool bot",
+  "description": "A Eranodes Bot",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
