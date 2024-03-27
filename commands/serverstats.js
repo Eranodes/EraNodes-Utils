@@ -1,4 +1,4 @@
-require('dotenv').config(); // Load environment variables from .env file
+require('dotenv').config();
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 function getUptimeString(uptimeInMilliseconds) {
@@ -45,10 +45,19 @@ module.exports = {
                 .setDescription('Server ID')
                 .setRequired(true)),
 
-    async execute(interaction) {
-        const serverId = interaction.options.getString('serverid');
-        const apiKey = process.env.PTERODACTYL_API_KEY;
-        const panelUrl = process.env.PTERODACTYL_PANEL_URL;
+        async execute(interaction) {
+            const adminRoleId = process.env.ADMINISTRATIVE_ROLE_ID;
+        
+            // Check if the user has the administrative role
+            if (!interaction.member.roles.cache.has(adminRoleId)) {
+                await interaction.reply({ content: 'You do not have permission to execute this command.', ephemeral: true });
+                return;
+            }
+        
+            // Rest of the command execution code
+            const serverId = interaction.options.getString('serverid');
+            const apiKey = process.env.PTERODACTYL_API_KEY;
+            const panelUrl = process.env.PTERODACTYL_PANEL_URL;
 
         try {
             const fetch = await import('node-fetch');

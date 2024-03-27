@@ -10,6 +10,13 @@ if (!fs.existsSync(logsFolder)) {
   fs.mkdirSync(logsFolder);
 }
 
+// ANSI escape codes for text color
+const colors = {
+  info: '\x1b[32m', // Green
+  warn: '\x1b[33m', // Yellow
+  error: '\x1b[31m' // Red
+};
+
 const logToFile = (message, level) => {
   const currentDate = format(new Date(), 'dd-MM-yyyy');
   const logFileName = `./logs/${currentDate}.log`;
@@ -42,17 +49,8 @@ const logToWebhook = async (message, level) => {
 
 const log = async (message, level = 'info') => {
   // Log to console
-  switch (level.toLowerCase()) {
-    case 'error':
-      console.error(`[ERROR] ${message}`);
-      break;
-    case 'warn':
-      console.warn(`[WARN] ${message}`);
-      break;
-    default:
-      console.log(`[INFO] ${message}`);
-      break;
-  }
+  const color = colors[level.toLowerCase()] || colors['info']; // Default to green if level is unknown
+  console.log(`${color}[${level.toUpperCase()}] ${message}\x1b[0m`); // Reset color after the message
 
   // Log to file
   logToFile(message, level);

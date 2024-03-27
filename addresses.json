@@ -1,7 +1,7 @@
 {
     "addresses": [
       {
-        "ip": "http://5.230.119.203/",
+        "ip": "5.230.119.203",
         "location": "Finland",
         "flag": ":flag_fi:"
       }
