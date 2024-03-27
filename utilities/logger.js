@@ -24,7 +24,7 @@ const logToWebhook = async (message, level) => {
     const currentDate = format(new Date(), 'dd-MM-yyyy');
     const webhookUrl = process.env.WEBHOOK_URL;
 
-    const color = level.toLowerCase() === 'error' ? 0xFF0000 : level.toLowerCase() === 'warn' ? 0xFFA500 : 0x00FF00;
+    const color = level.toLowerCase() === 'error' ? 0xFF0000 : 0xFFA500; // Red for error, orange for warn
 
     await axios.post(webhookUrl, {
       embeds: [
@@ -57,8 +57,10 @@ const log = async (message, level = 'info') => {
   // Log to file
   logToFile(message, level);
 
-  // Log to webhook
-  await logToWebhook(message, level);
+  // Log to webhook only for errors and warnings
+  if (['error', 'warn'].includes(level.toLowerCase())) {
+    await logToWebhook(message, level);
+  }
 };
 
 module.exports = { log };

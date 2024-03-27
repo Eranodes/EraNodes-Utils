@@ -1,7 +1,6 @@
-// commands/listServers.js
-
 const axios = require('axios');
 const { config } = require('dotenv');
+const path = require('path'); // Import the path module
 
 config();
 
@@ -39,6 +38,9 @@ module.exports = {
 
       // Split servers into chunks to fit within character limit of an embed
       const serverChunks = chunkServers(servers);
+
+      // Get the file path for the footer icon
+      const footerIconPath = path.join(__dirname, '..', 'assets', 'images', 'eranodes-transparent.png');
 
       // Iterate over each chunk of servers
       for (let i = 0; i < serverChunks.length; i++) {
@@ -95,13 +97,22 @@ module.exports = {
         // Construct the embed with the current chunk of server fields
         const embed = {
           title: 'Server List',
-          color: 0xffffff, // Default color
+          color: 0x951931,
           fields: serverFields,
-          footer: { text: `Embed ${i + 1} of ${serverChunks.length}` }, // Add page number to the footer
+          footer: {
+            text: `Embed ${i + 1} of ${serverChunks.length}`,
+            icon_url: 'attachment://footer_icon.png', // Set the footer icon
+          },
         };
 
         // Send the embed with the current chunk of server fields to the channel
-        await interaction.channel.send({ embeds: [embed] });
+        await interaction.channel.send({
+          embeds: [embed],
+          files: [{
+            attachment: footerIconPath,
+            name: 'footer_icon.png',
+          }],
+        });
       }
 
     } catch (error) {

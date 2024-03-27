@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { log } = require('../utilities/logger'); // Importing the logger module
+const path = require('path');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,11 +17,23 @@ module.exports = {
       // Get the user's avatar URL
       const avatarURL = user.displayAvatarURL({ dynamic: true, size: 2048 });
 
+      // Construct the file path for the footer icon
+      const footerIconPath = path.join(__dirname, '..', 'assets', 'images', 'eranodes-transparent.png');
+
       // Reply with the user's avatar as an embed
       await interaction.reply({
         embeds: [{
           title: `${user.tag}'s Avatar`,
           image: { url: avatarURL },
+          color: 0x951931,
+          footer: {
+            text: 'EraNodes',
+            icon_url: 'attachment://footer_icon.png',
+          },
+        }],
+        files: [{
+          attachment: footerIconPath,
+          name: 'footer_icon.png',
         }],
       });
 

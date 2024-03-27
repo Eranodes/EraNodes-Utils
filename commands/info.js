@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const packageJson = require('../package.json');
+const path = require('path');
 
 const infoCommand = new SlashCommandBuilder()
   .setName('info')
@@ -13,6 +14,9 @@ async function execute(interaction) {
   const authorSite = '[g9aerospace.in](https://g9aerospace.in)';
   const companySite = ['[freedash.eranodes.xyz](https://freedash.eranodes.xyz)', '[panel.eranodes.xyz](https://panel.eranodes.xyz),', '[status.eranodes.xyz](https://status.eranodes.xyz)'];
   const githubRepo = 'https://github.com/Eranodes/EraNodes-Utils';
+
+  // Define the path to the footer icon
+  const footerIconPath = path.join(__dirname, '..', 'assets', 'images', 'eranodes-transparent.png');
 
   // Create a direct object with the information
   const infoObject = {
@@ -29,6 +33,7 @@ async function execute(interaction) {
     color: 0x951931,
     footer: {
       text: 'EraNodes',
+      icon_url: 'attachment://footer_icon.png', // Specify the icon URL
     },
   };
 

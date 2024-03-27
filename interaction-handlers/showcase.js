@@ -68,7 +68,7 @@ module.exports = {
               {
                 title: `${matchingAddress.flag} ${serverName}`, // Add flag to the beginning of the embed title
                 description: serverDescription,
-                color: 0x00FF00, // Set the embed color to green
+                color: 0x951931,
                 fields: [
                   { name: 'Address', value: rawServerAddress, inline: false },
                   { name: 'Minecraft Server Status', value: serverInfo.status, inline: false },
@@ -119,14 +119,13 @@ function resolveWithPort(serverAddress) {
 // Function to get Minecraft server information using mcsrv
 async function getMinecraftServerInfo(serverAddress) {
   try {
-    const response = await mcsrv(serverAddress); // Updated function call
-
+    const response = await mcsrv(serverAddress);
     if (response.online) {
       return {
         status: 'Online',
         players: `${response.players.online}/${response.players.max}`,
         version: response.version,
-        motd: response.motd.clean, // Extract the clean MOTD
+        motd: response.motd.clean,
       };
     } else {
       return {

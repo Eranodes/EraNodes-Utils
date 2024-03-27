@@ -37,6 +37,7 @@ module.exports = {
       // Create an embed with the tag information
       const embedData = {
         title: tagData.title,
+        color: 0x951931,
         description: tagData.content,
         footer: {
           text: `Author: ${tagData.author.tag}`,

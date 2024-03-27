@@ -19,6 +19,7 @@ module.exports = {
       // Create tag data object
       const tagData = {
         title,
+        color: 0x951931,
         content,
         author: {
           id: authorID,

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fs = require('fs').promises;
+const path = require('path');
 const { log } = require('../utilities/logger');
 
 module.exports = {
@@ -66,7 +67,7 @@ module.exports = {
 
       // Create an embed object with information about the users invited by the target user
       const embed = {
-        color: 0x3498db,
+        color: 0x951931,
         title: `Invite Data for ${targetUser.tag}`,
         description: 'List of users invited by the target user:',
         fields: [
@@ -80,10 +81,15 @@ module.exports = {
             value: `Joined on: ${user.joinDate} at ${user.joinTime}\nStill in Guild: ${user.isInGuild}`,
           })),
         ],
+        // Set the footer with the specified icon
+        footer: {
+          text: 'EraNodes',
+          icon_url: `attachment://${path.basename('assets/images/eranodes-transparent.png')}`
+        }
       };
 
-      // Send the embed in the channel where the command was invoked
-      await interaction.reply({ embeds: [embed] });
+      // Send the embed in the channel where the command was invoked, along with the image attachment
+      await interaction.reply({ embeds: [embed], files: [`${path.resolve('assets/images/eranodes-transparent.png')}`] });
       log(`Invite data sent for user ${targetUser.tag}`, 'info');
     } catch (error) {
       log(`Error executing /invites command: ${error.message}`, 'error');
