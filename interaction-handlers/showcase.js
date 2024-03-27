@@ -106,7 +106,6 @@ function resolveWithPort(serverAddress) {
     });
   });
 }
-
 async function getMinecraftServerInfo(serverAddress) {
   try {
     const response = await mcsrv(serverAddress);
